@@ -5,6 +5,8 @@ Robonix deployment for the fixed-base **JAKA Mini** 6-DOF arm with a
 [primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx](https://github.com/syswonder/primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx)
 package over TCP to the controller (jkrc SDK).
 
+![JAKA Mini 6-DOF arm with the TG-9801 gripper](assets/robot.jpg)
+
 ## Hardware & platform
 
 | item | value |
