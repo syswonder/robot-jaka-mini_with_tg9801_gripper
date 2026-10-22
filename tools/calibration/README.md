@@ -5,7 +5,7 @@
 `homography_matrix`。无头机器上画面走浏览器（Flask MJPEG，`:8079`）。
 
 - **臂**：直连控制器 `10.5.5.100`（jkrc）；驱动不随工具分发，复用臂包
-  `primitive-jaka-rbnx` 的 `JakaDriver`。
+  `primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx` 的 `JakaDriver`。
 - **相机**：宿主 `pyorbbecsdk` 直连 Gemini 336L，**钉死 1280×720**（与运行时相机原语
   同口径；退默认档会大声警告——那意味着标定作废）。
 - **内参**：`intrinsics-data/` 不入库（值与清单 `camera_matrix`/`dist_coeffs` 相同）；
@@ -46,7 +46,7 @@ config 的 `default_desktop_height`）本工具**不产出**。
 ## 臂包依赖
 
 需要含 `jaka_arm/driver.py` 的包根，按序探测：config `jaka_arm_package_path` →
-`../primitive-jaka-rbnx`（部署根同级）→ `rbnx-boot/cache/*/` → 部署根同级其它目录；
+`../primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx`（部署根同级）→ `rbnx-boot/cache/*/` → 部署根同级其它目录；
 找不到会列出尝试过的路径（先跑 `bash build.sh` 或 `rbnx boot` 把包拉进 cache）。
 
 ## 行为说明（有意为之）

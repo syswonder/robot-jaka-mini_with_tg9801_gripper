@@ -6,7 +6,8 @@
 # tools/jaka_estop_recover.py 直连裸 jkrc 也读这个键）
 arm_port: 10.5.5.100
 # 含 jaka_arm/driver.py 的臂包根目录；空 = 自动探测
-# （sibling ../primitive-jaka-rbnx → rbnx-boot/cache/* → 部署根同级目录）
+# （sibling ../primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx
+#   → rbnx-boot/cache/* → 部署根同级目录）
 jaka_arm_package_path: ""
 # JakaDriver 运动参数（标定想更慢更稳就调小）
 joint_speed_rad_s: 1.0

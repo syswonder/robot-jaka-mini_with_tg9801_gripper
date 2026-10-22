@@ -1,7 +1,7 @@
-# Description: 标定工具的臂适配层——探测并复用 primitive-jaka-rbnx 的 JakaDriver，
+# Description: 标定工具的臂适配层——探测并复用 primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx 的 JakaDriver，
 # 暴露标定脚本使用的调用面（与 AIIT-Roboarm arm/arm_base.Arm 的用法一致）。
 #
-# 臂驱动不随本工具分发：jkrc/夹爪/运动学代码都在臂包 primitive-jaka-rbnx
+# 臂驱动不随本工具分发：jkrc/夹爪/运动学代码都在臂包 primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx
 # （jaka_arm/driver.py，MIT，与 AIIT 的 jaka_ctrl_by_sdk.py 同源）里维护，
 # 这里只做探测 + 薄适配，避免两份实现各自漂移。
 import glob
@@ -27,7 +27,10 @@ def _locate_jaka_package() -> str:
     if configured:
         candidates.append(configured)
     candidates.append(
-        os.path.join(os.path.dirname(DEPLOY_ROOT), "primitive-jaka-rbnx")
+        os.path.join(
+            os.path.dirname(DEPLOY_ROOT),
+            "primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx",
+        )
     )
     candidates.extend(
         sorted(glob.glob(os.path.join(DEPLOY_ROOT, "rbnx-boot", "cache", "*")))
@@ -37,7 +40,8 @@ def _locate_jaka_package() -> str:
         if os.path.exists(os.path.join(candidate, "jaka_arm", "driver.py")):
             return candidate
     raise ImportError(
-        "找不到臂包 primitive-jaka-rbnx（需要 jaka_arm/driver.py）。已尝试:\n  "
+        "找不到臂包 primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx"
+        "（需要 jaka_arm/driver.py）。已尝试:\n  "
         + "\n  ".join(candidates)
         + "\n请先 `bash build.sh` 或 `rbnx boot` 让臂包进入 rbnx-boot/cache/，"
         "或在 config.yaml 里设置 jaka_arm_package_path。"
