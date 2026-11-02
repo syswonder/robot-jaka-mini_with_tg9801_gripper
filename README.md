@@ -202,7 +202,7 @@ same code.
 |---|---|---|
 | static | `rbnx validate ../primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx && bash build.sh` | all packages built |
 | unit | `cd ../primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx && .venv/bin/python -m unittest jaka_arm.tests.test_driver` | 8/8 OK |
-| read-only arm | `bash start.sh` | joint_states/end_pose stream; gripper state open/unknown sane |
+| read-only arm | `bash start.sh` | joint_states/end_pose stream; gripper_joint open/unknown sane (~0.5 Hz refresh) |
 | single joint | motion_enabled: true, `ros2 topic pub /jaka/joint_command` small delta | joints follow, limits hold, estop works |
 | gripper | gripper_joint close/open | soma reports open / holding |
 | camera | `bash start.sh`, `rbnx caps -v` | orbbec_camera ACTIVE; `camera/rgb` streams 1280×720 |

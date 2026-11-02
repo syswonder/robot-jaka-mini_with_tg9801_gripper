@@ -56,4 +56,4 @@ robot:
 description:
   summary: "Fixed-base JAKA 6-DOF arm with TG-9801 adaptive gripper and an overhead Orbbec Gemini 336L RGBD camera."
   can_do: ["joint control", "cartesian motion", "gripping", "camera-driven pick of a named object (VLM detection + 2D hand-eye homography)"]
-  cannot_do: ["mobile navigation", "operate without a fixed base", "grasp objects off the calibrated table plane (pick z is a fixed configured height)", "verify grasp success from gripper feedback (TG-9801 RS485 position reads are invalid on this arm)"]
+  cannot_do: ["mobile navigation", "operate without a fixed base", "grasp objects off the calibrated table plane (pick z is a fixed configured height)", "depend on gripper feedback alone for a grasp verdict (TG-9801 position readback refreshes at ~0.5 Hz and can be invalid)"]
