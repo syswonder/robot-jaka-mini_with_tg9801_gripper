@@ -5,8 +5,11 @@
 # joint_1..joint_6 so they match the joint_states names published by the
 # jaka_arm provider (robot_state_publisher matches by exact name). If the
 # URDF is re-exported from the JAKA app, re-apply this rename.
-# Gripper finger joints (link_008_joint/link_009_joint, prismatic) are kept
-# as exported; the provider publishes a single gripper_joint value.
+# The export's bare two-finger model was replaced on 2026-11-03 by the flange +
+# drive disc + connecting rods + jaws chain (gripper_flange .. gripper_finger_r),
+# the same one the Lumi deployment uses. The provider publishes a single
+# gripper_joint value, which is now an actual joint in the URDF; the second jaw
+# follows it through <mimic>.
 urdf:
   path: ./urdf/robot.urdf
   root_link: base_link
@@ -32,7 +35,7 @@ robot:
       components:
         - id: gripper
           type: parallel_jaw_gripper
-          urdf_link: link_007
+          urdf_link: gripper_base
           state:
             joint_name: gripper_joint
             # Full stroke of the TG-9801 (datasheet). Re-calibrate against
