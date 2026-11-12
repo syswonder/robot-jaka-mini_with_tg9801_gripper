@@ -39,10 +39,24 @@ robot:
           state:
             joint_name: gripper_joint
             # Full stroke of the TG-9801 (datasheet). Re-calibrate against
-            # the measured open reading during acceptance.
+            # the measured open reading during acceptance. This is the
+            # two-finger gap the provider publishes on gripper_joint; the
+            # URDF joint itself is per-finger travel (0..0.049), so a viewer
+            # shows twice the finger travel unless it halves the value.
             open_position_m: 0.098
             open_tolerance_m: 0.005
-          exports: []
+          # Standard gripper contracts (gripper/state, info, grip, open) are
+          # served by the same `jaka_arm` provider as the arm contracts.
+          # `gripper/move` and `gripper/stop` are intentionally not exported:
+          # the TG-9801 has neither a verified absolute-width command nor a
+          # halt command.
+          exports:
+            - provider_id: jaka_arm
+              capabilities:
+                - { path: robonix/primitive/gripper/state, description: "Read the measured opening, holding state and jaw motion." }
+                - { path: robonix/primitive/gripper/info, description: "Read the gripper's width range and accepted grip forms." }
+                - { path: robonix/primitive/gripper/grip, description: "Close the gripper adaptively (grip the object)." }
+                - { path: robonix/primitive/gripper/open, description: "Open the gripper to its endpoint." }
         - id: camera
           type: rgbd_camera
           # Overhead/fixed Orbbec Gemini 336L. Fixed relative to the base;
@@ -58,5 +72,5 @@ robot:
 
 description:
   summary: "Fixed-base JAKA 6-DOF arm with TG-9801 adaptive gripper and an overhead Orbbec Gemini 336L RGBD camera."
-  can_do: ["joint control", "cartesian motion", "gripping", "camera-driven pick of a named object (VLM detection + 2D hand-eye homography)"]
-  cannot_do: ["mobile navigation", "operate without a fixed base", "grasp objects off the calibrated table plane (pick z is a fixed configured height)", "depend on gripper feedback alone for a grasp verdict (TG-9801 position readback refreshes at ~0.5 Hz and can be invalid)"]
+  can_do: ["joint control", "cartesian motion", "gripping", "gripper grip/open/state through the standard robonix/primitive/gripper contracts", "camera-driven pick of a named object (yolo11-obb for the trained fruit classes, open-vocabulary VLM for anything else, 2D hand-eye homography)"]
+  cannot_do: ["mobile navigation", "operate without a fixed base", "grasp objects off the calibrated table plane (pick z is a fixed configured height)", "depend on gripper feedback alone for a grasp verdict (TG-9801 readback refreshes at ~0.3 Hz and can be invalid)", "position the jaws at an absolute width (no gripper/move) or halt them mid-travel (no gripper/stop)"]

@@ -1,9 +1,13 @@
 # robot-jaka-mini_with_tg9801_gripper — JAKA Mini Robonix deployment
 
 Robonix deployment for the fixed-base **JAKA Mini** 6-DOF arm with a
-**TG-9801** adaptive gripper (end RS485). The arm is driven by the
+**TG-9801** adaptive gripper (end RS485). Both are driven by the
 [primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx](https://github.com/syswonder/primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx)
-package over TCP to the controller (jkrc SDK).
+package over TCP to the controller (jkrc SDK). The provider serves the
+`robonix/primitive/arm/*` contracts and the standard
+`robonix/primitive/gripper/*` contracts (`state`, `info`, `grip`, `open`);
+`gripper_joint` in `joint_states` stays as the compatibility view the skill
+and URDF consume.
 
 ![JAKA Mini 6-DOF arm with the TG-9801 gripper](assets/robot.jpg)
 
@@ -24,7 +28,7 @@ for the package site; `rbnx boot` fetches them into `rbnx-boot/cache/`:
 
 | package | repo | role |
 |---|---|---|
-| `jaka_arm` | [syswonder/primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx](https://github.com/syswonder/primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx) | arm primitive — `robonix/primitive/arm/*` over jkrc TCP |
+| `jaka_arm` | [syswonder/primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx](https://github.com/syswonder/primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx) | arm + gripper primitive — `robonix/primitive/arm/*` and `robonix/primitive/gripper/*` over jkrc TCP |
 | `orbbec_camera` | [syswonder/primitive-orbbec-camera-rbnx](https://github.com/syswonder/primitive-orbbec-camera-rbnx) | Orbbec camera primitive — `robonix/primitive/camera/{rgb,depth,camera_info}` (Gemini 336L via `gemini_330_series.launch.py`) |
 | `jaka` | [syswonder/skill-jaka-grasp-rbnx](https://github.com/syswonder/skill-jaka-grasp-rbnx) | grab/release/home/place + camera-driven `pick` skill (fixed-pose `jaka_fixed_grasp`, 固定抓取) — `robonix/skill/jaka/*` |
 
@@ -211,10 +215,11 @@ same code.
 | stage | command | expected |
 |---|---|---|
 | static | `rbnx validate ../primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx && bash build.sh` | all packages built |
-| unit | `cd ../primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx && .venv/bin/python -m unittest jaka_arm.tests.test_driver` | 8/8 OK |
+| unit | `cd ../primitive-jaka-mini_with_tg9801_gripper-arm_gripper-rbnx && .venv/bin/python -m unittest jaka_arm.tests.test_driver jaka_arm.tests.test_gripper jaka_arm.tests.test_gripper_contract` | 37/37 OK |
 | read-only arm | `bash start.sh` | joint_states/end_pose stream; gripper_joint open/unknown sane (~0.5 Hz refresh) |
 | single joint | motion_enabled: true, `ros2 topic pub /jaka/joint_command` small delta | joints follow, limits hold, estop works |
-| gripper | gripper_joint close/open | soma reports open / holding |
+| gripper | `ros2 topic echo /jaka/gripper/state`; `ros2 service call /jaka/gripper/info gripper/srv/GetGripperInfo`; `gripper/grip` + `gripper/open` | state at ~0.3 Hz with valid width; info reports 0-0.098 m, no effort; grip/open dispatch, then state shows holding/not-holding |
+| gripper (legacy) | `gripper_joint` close/open via `joint_command` | still works; soma reports open / holding |
 | camera | `bash start.sh`, `rbnx caps -v` | orbbec_camera ACTIVE; `camera/rgb` streams 1280×720 |
 | pick (dry) | set VLM + homography, `jaka_pick {object}` before enabling motion | detect + geometry resolve; motion times out with `motion_enabled` hint |
 | pick (live) | motion_enabled: true, calibrated | arm descends on the detected object, closes, lifts |
