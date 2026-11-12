@@ -15,6 +15,9 @@ env:
   RMW_IMPLEMENTATION: rmw_zenoh_cpp
   ROBONIX_ZENOH_MODE: client
   ROBONIX_ZENOH_ROUTER: tcp/0.0.0.0:7447
+  # Speech backend for build + boot: tencent skips the local model set
+  # (the local backend downloads a ~1 GB Paraformer archive).
+  SPEECH_BACKEND: "tencent"
   # Host-side package code (robot_description provider) runs on `python3`;
   # its generated gRPC bindings require grpcio>=1.76, which only the
   # deployment venv has (system python3 pins grpcio 1.73 for JetPack).
@@ -112,6 +115,50 @@ primitive:
       depth_height: 0
       depth_fps: 0
       sentinel_timeout_s: 30.0
+
+  # USB audio (UGREEN CM564, card 0) for the voice path. ALSA reports
+  # 48 kHz-only playback/capture, so both directions go through `plughw`
+  # and the rates are pinned to 16 kHz: liaison's ASR/voiceprint requests
+  # are fixed at 16 kHz pcm_s16le, and the TTS contract returns 16 kHz.
+  # speaker_sample_rate defaults to 24000 and would play TTS 1.5x fast.
+  - name: audio_driver
+    url: https://github.com/syswonder/primitive-audio-driver-rbnx
+    branch: main
+    config:
+      mic_device: "plughw:CARD=Audio,DEV=0"
+      mic_sample_rate: 16000
+      speaker_device: "plughw:CARD=Audio,DEV=0"
+      speaker_sample_rate: 16000
+
+  # Client-side audio: exposes the operator PC's microphone and speaker through
+  # the standard audio contracts. `reverse` makes the robot listen on 60002 and
+  # robonix-client dial out, so no client IP goes in this file. No TLS/auth —
+  # keep it on a trusted LAN or Tailscale.
+  - name: audio_client_bridge
+    url: https://github.com/syswonder/primitive-audio-client-bridge-rbnx
+    branch: main
+    config:
+      transport: reverse
+      listen_host: 0.0.0.0
+      listen_port: 60002
+
+service:
+  # Speech uses the Tencent Cloud backend (realtime ASR + TTS). No local model
+  # download: the local backend pulls a ~1 GB Paraformer archive, and Whisper's
+  # one-shot weights are 20 GB. Secrets stay in the operator environment
+  # (TENCENTCLOUD_SECRET_ID / TENCENTCLOUD_SECRET_KEY, sourced from .vlmkey by
+  # start.sh); only the non-secret AppID goes in the manifest. Liaison
+  # (system.liaison) drives the voice loop
+  # mic -> asr_stream -> voiceprint(absent -> degraded) -> pilot -> tts.
+  - name: speech
+    path: ${ROBONIX_SOURCE_PATH}/services/speech
+    config:
+      speech_backend: tencent
+      tencent_asr_appid: "${TENCENT_ASR_APPID}"
+      tencent_asr_engine: 16k_zh
+      tencent_tts_voice_type: 402000
+      tencent_tts_region: ap-guangzhou
+      default_speaker_provider_id: audio_driver
 
 skill:
   # jaka grab/release/home/place/pick (+ jaka_fixed_grasp: fixed-pose
