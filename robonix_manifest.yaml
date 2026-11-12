@@ -184,8 +184,8 @@ skill:
       # reads gripper_joint (m) directly for its width/verdict thresholds.
       end_effector: gripper
       # grab/release poses ([x,y,z,rx,ry,rz], metres + radians, base frame).
-      hover_pose: [0.20, 0.00, 0.275, 3.14159265, 0.0, 0.0]
-      grasp_pose: [0.20, 0.00, 0.125, 3.14159265, 0.0, 0.0]
+      hover_pose: [0.00, 0.30, 0.275, 3.14159265, 0.0, 0.0]
+      grasp_pose: [0.00, 0.30, 0.125, 3.14159265, 0.0, 0.0]
       # ── fixed_grasp (demo, 固定抓取): fixed-pose pick-and-place ──
       # Both REQUIRED for jaka_fixed_grasp; until set it reports
       # unavailable (grab/release/pick unaffected). Each hover is
