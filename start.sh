@@ -11,6 +11,13 @@ set -euo pipefail
 
 DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROS_SETUP="${RBNX_ROS_SETUP:-/opt/ros/humble/setup.bash}"
+# Codegen must run with the deployment venv's Python. Its protobuf runtime is
+# the pinned one (6.33.6); generating *_pb2 with the newer system protoc makes
+# every primitive abort at import: "Runtime version cannot be older than the
+# linked gencode version". rbnx boot inherits this for any inline package build.
+if [[ -x "$DEPLOY_DIR/.venv/bin/python" ]]; then
+  export RBNX_CODEGEN_PYTHON="${RBNX_CODEGEN_PYTHON:-$DEPLOY_DIR/.venv/bin/python}"
+fi
 # Local-first: boot the gitignored path-based manifest when present (runs
 # the sibling checkouts, not the rbnx-boot/cache clones); fall back to the
 # committed url-based one elsewhere.
