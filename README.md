@@ -42,9 +42,15 @@ frame → detect → a calibrated **2D hand-eye homography** maps the bbox centr
 to arm `base_link` XY → grasp at `(x, y, desktop_height)` with a
 vertical-down orientation. It reuses the same grasp segment as `grab`.
 
-Two detection backends (`detect_scheme` in the skill config):
+Three detection backends (`detect_scheme` in the skill config):
 
-- **`yolo`** (deploy default): in-process yolo11-obb — the fruit model
+- **`auto`** (deploy default): route per request — a name the weights cover
+  (`carrot`/`potato`/`tomato` plus the aliases below) takes the `yolo` path,
+  every other name takes the `vlm` path. Say "抓西红柿" and the local GPU
+  model runs; say "抓螺丝刀" and the open-vocabulary call runs. A yolo miss
+  is not retried through the VLM, so "nothing on the table" is reported as
+  such; unloadable weights degrade to the VLM.
+- **`yolo`**: in-process yolo11-obb — the fruit model
   (`carrot`/`potato`/`tomato`) reused from the agilex deploy at
   `robot-agilex-robonix/host-services/yolo/weights/best.pt` (point the
   `YOLO_MODEL_PATH` env var at it — the manifest forwards it to
@@ -53,9 +59,10 @@ Two detection backends (`detect_scheme` in the skill config):
   names via `yolo_class_aliases` (胡萝卜→carrot …); the OBB rotation aligns
   the gripper yaw to the object's long edge
   (`rz = grasp_yaw_offset_deg - yaw`, default -90 = this arm's tuned
-  value — adjust by ±90 if the fingers land off-axis).
+  value — adjust by ±90 if the fingers land off-axis). Pinned: any name
+  outside the three classes fails.
 - **`vlm`**: open-vocabulary multimodal detection (pixel bbox, no
-  rotation → fixed `grasp_rpy`).
+  rotation → fixed `grasp_rpy`). Pinned: every pick pays a network call.
 
 **Calibration is required and on-site.** `pick` is unavailable until you set,
 in `robonix_manifest.yaml`'s `skill: - name: jaka` config block:
@@ -64,6 +71,9 @@ in `robonix_manifest.yaml`'s `skill: - name: jaka` config block:
 - the scheme's detector: the `YOLO_MODEL_PATH` env var (weights file,
   exported like the VLM vars — e.g. in `.vlmkey`) or
   `vlm_base_url` / `vlm_api_key` / `vlm_model` (**multimodal** endpoint);
+  with `auto` either one is enough (`yolo` alone covers the three classes,
+  `vlm` alone covers everything, both together cover everything locally
+  where possible);
 - `desktop_height` — the table height in `base_link` (grasp z).
 
 Until then `pick` returns a clear error; `grab` / `release` are unaffected.
